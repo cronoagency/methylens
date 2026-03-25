@@ -192,7 +192,19 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero */}
-      <section className="w-full max-w-[1200px] mx-auto px-6 pt-20 pb-16 md:pt-32 md:pb-28 text-center">
+      <section className="relative w-full max-w-[1200px] mx-auto px-6 pt-20 pb-16 md:pt-32 md:pb-28 text-center overflow-hidden">
+        {/* Background video */}
+        <div className="absolute inset-0 -z-10 flex items-center justify-center opacity-15">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover rounded-3xl"
+          >
+            <source src="/hero-video.mp4" type="video/mp4" />
+          </video>
+        </div>
         <motion.div
           className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-accent text-sm font-medium mb-6"
           initial={{ opacity: 0, scale: 0.9 }}
