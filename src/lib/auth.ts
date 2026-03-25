@@ -2,15 +2,24 @@ import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import EmailProvider from "next-auth/providers/email";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { Resend } from "resend";
 import { prisma } from "./prisma";
 
 const providers = [];
 
-if (process.env.EMAIL_SERVER) {
+if (process.env.RESEND_API_KEY) {
   providers.push(
     EmailProvider({
-      server: process.env.EMAIL_SERVER,
-      from: process.env.EMAIL_FROM || "noreply@methylens.com",
+      from: process.env.EMAIL_FROM || "Methylens <onboarding@resend.dev>",
+      sendVerificationRequest: async ({ identifier: email, url }) => {
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        await resend.emails.send({
+          from: process.env.EMAIL_FROM || "Methylens <onboarding@resend.dev>",
+          to: email,
+          subject: "Sign in to Methylens",
+          html: `<p>Click <a href="${url}">here</a> to sign in to Methylens.</p>`,
+        });
+      },
     })
   );
 }
