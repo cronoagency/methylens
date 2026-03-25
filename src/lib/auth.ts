@@ -10,6 +10,7 @@ const providers = [];
 if (process.env.RESEND_API_KEY) {
   providers.push(
     EmailProvider({
+      server: "smtp://dummy:dummy@localhost:25", // Required by next-auth but unused — we use sendVerificationRequest
       from: process.env.EMAIL_FROM || "Methylens <onboarding@resend.dev>",
       sendVerificationRequest: async ({ identifier: email, url }) => {
         const resend = new Resend(process.env.RESEND_API_KEY);
