@@ -1,13 +1,11 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, FileText, AlertTriangle, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-// Proxy via Next.js API route — il backend non è esposto al browser
-const API_URL = "";
 
 const DISCLAIMER_SHORT =
   "The results are produced by peer-reviewed, open-source scientific algorithms. " +
@@ -18,6 +16,7 @@ const DISCLAIMER_SHORT =
 type UploadState = "idle" | "selected" | "uploading" | "processing" | "error";
 
 export default function AnalyzePage() {
+  const { status } = useSession();
   const [file, setFile] = useState<File | null>(null);
   const [state, setState] = useState<UploadState>("idle");
   const [error, setError] = useState("");
@@ -25,6 +24,20 @@ export default function AnalyzePage() {
   const [progress, setProgress] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
+  if (status === "loading" || status === "unauthenticated") {
+    return (
+      <div className="dot-pattern min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-accent animate-spin" />
+      </div>
+    );
+  }
 
   const handleFile = useCallback((f: File) => {
     if (!f.name.endsWith(".csv")) {
@@ -100,9 +113,16 @@ export default function AnalyzePage() {
       const data = await res.json();
       setProgress(100);
 
-      // Store results in sessionStorage and navigate
-      sessionStorage.setItem("methylens_results", JSON.stringify(data));
-      router.push("/results");
+      // If analysis was saved to DB, redirect to dashboard detail
+      if (data._analysisId) {
+        router.push(`/dashboard/analysis/${data._analysisId}`);
+      } else if (data._existingId) {
+        router.push(`/dashboard/analysis/${data._existingId}`);
+      } else {
+        // Fallback: store in sessionStorage and go to /results
+        sessionStorage.setItem("methylens_results", JSON.stringify(data));
+        router.push("/results");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setState("error");
