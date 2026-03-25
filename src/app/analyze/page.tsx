@@ -6,7 +6,8 @@ import { Upload, FileText, AlertTriangle, Loader2, ArrowLeft } from "lucide-reac
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8901";
+// Proxy via Next.js API route — il backend non è esposto al browser
+const API_URL = "";
 
 const DISCLAIMER_SHORT =
   "The results are produced by peer-reviewed, open-source scientific algorithms. " +
@@ -80,7 +81,7 @@ export default function AnalyzePage() {
       setProgress(30);
       setState("processing");
 
-      const res = await fetch(`${API_URL}/analyze`, {
+      const res = await fetch(`/api/analyze`, {
         method: "POST",
         body: formData,
       });
